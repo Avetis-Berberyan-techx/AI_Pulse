@@ -65,13 +65,20 @@ function SideBar({ documents, onNavigate }: SideBarProps) {
         ) : (
           <div className="mt-3 space-y-1">
             {documents.map((document) => (
-              <button
+              <NavLink
                 key={document.id}
-                type="button"
-                className="flex w-full items-center gap-2 rounded-md bg-[#0d2037] px-2 py-1.5 text-left text-xs text-slate-200"
+                to={`/document-chat/${document.id}`}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition ${
+                    isActive
+                      ? "bg-[#0d2037] text-slate-100"
+                      : "text-slate-400 hover:bg-[#0b1626] hover:text-slate-200"
+                  }`
+                }
               >
                 <span className="truncate">{document.name}</span>
-              </button>
+              </NavLink>
             ))}
           </div>
         )}

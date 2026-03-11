@@ -5,12 +5,14 @@ import type { UploadedDocument } from "../types/documents";
 type DocumentUploadProps = {
   documents: UploadedDocument[];
   onDocumentUploaded: (document: UploadedDocument) => void;
+  onDocumentDeleted: (documentId: string) => void;
   onToggleSidebar: () => void;
 };
 
 function DocumentUpload({
   documents,
   onDocumentUploaded,
+  onDocumentDeleted,
   onToggleSidebar,
 }: DocumentUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -27,21 +29,67 @@ function DocumentUpload({
     setIsUploading(false);
   };
 
-  const uploadSelectedFile = () => {
+  const uploadSelectedFile = async () => {
     if (!selectedFile || isUploading) return;
 
     setIsUploading(true);
-    window.setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to upload document";
+        try {
+          const data = await response.json();
+          if (data?.error) errorMessage = data.error;
+        } catch {
+          // Ignore JSON parsing errors and use fallback message.
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
       onDocumentUploaded({
-        id: crypto.randomUUID(),
+        id: data?.id ?? crypto.randomUUID(),
         name: selectedFile.name,
         sizeKb: Math.max(1, Math.round(selectedFile.size / 1024)),
         chunks: 4,
         uploadedAt: "Just now",
       });
       setSelectedFile(null);
+    } catch (error) {
+      console.error(error);
+    } finally {
       setIsUploading(false);
-    }, 700);
+    }
+  };
+
+  const deleteDocument = async (documentId: string) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to delete document";
+        try {
+          const data = await response.json();
+          if (data?.error) errorMessage = data.error;
+        } catch {
+          // Ignore JSON parsing errors and use fallback message.
+        }
+        throw new Error(errorMessage);
+      }
+
+      onDocumentDeleted(documentId);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -181,7 +229,14 @@ function DocumentUpload({
                   </div>
                   <div className="flex items-center gap-2 text-slate-500">
                     <Check size={13} />
-                    <Trash2 size={13} />
+                    <button
+                      type="button"
+                      onClick={() => deleteDocument(document.id)}
+                      className="transition hover:text-slate-300"
+                      aria-label={`Delete ${document.name}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
               ))}

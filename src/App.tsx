@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import SideBar from "./components/SideBar";
 import Chat from "./components/Chat";
@@ -8,6 +8,34 @@ import type { UploadedDocument } from "./types/documents";
 function App() {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const loadDocuments = async () => {
+      try {
+        const response = await fetch("/api/documents");
+        if (!response.ok) {
+          throw new Error("Failed to load documents");
+        }
+        const data = await response.json();
+        const mapped = Array.isArray(data)
+          ? data.map((doc: any) => ({
+              id: doc._id ?? doc.id,
+              name: doc.name ?? doc.originalName ?? "Untitled",
+              sizeKb: Math.max(1, Math.round((doc.size ?? 0) / 1024)),
+              chunks: Array.isArray(doc.chunks) ? doc.chunks.length : 0,
+              uploadedAt: doc.uploadedAt
+                ? new Date(doc.uploadedAt).toLocaleString()
+                : "Unknown",
+            }))
+          : [];
+        setDocuments(mapped);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadDocuments();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#02050a] text-slate-100">
@@ -47,11 +75,22 @@ function App() {
                       ...prev.filter((item) => item.name !== doc.name),
                     ])
                   }
+                  onDocumentDeleted={(documentId) =>
+                    setDocuments((prev) =>
+                      prev.filter((doc) => doc.id !== documentId),
+                    )
+                  }
                 />
               }
             />
             <Route
               path="/all-documents-chat"
+              element={
+                <Chat onToggleSidebar={() => setIsMobileSidebarOpen(true)} />
+              }
+            />
+            <Route
+              path="/document-chat/:documentId"
               element={
                 <Chat onToggleSidebar={() => setIsMobileSidebarOpen(true)} />
               }
