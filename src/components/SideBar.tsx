@@ -4,10 +4,11 @@ import type { UploadedDocument } from "../types/documents";
 
 type SideBarProps = {
   documents: UploadedDocument[];
+  isLoadingDocuments?: boolean;
   onNavigate?: () => void;
 };
 
-function SideBar({ documents, onNavigate }: SideBarProps) {
+function SideBar({ documents, isLoadingDocuments, onNavigate }: SideBarProps) {
   return (
     <aside className="h-full border-r border-[#0f1f31] bg-[#040912] p-4">
       <div className="mb-6 flex items-center gap-3 border-b border-[#0f1f31] pb-4 ">
@@ -55,7 +56,11 @@ function SideBar({ documents, onNavigate }: SideBarProps) {
         <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">
           Documents
         </p>
-        {documents.length === 0 ? (
+        {isLoadingDocuments ? (
+          <div className="mt-4 rounded-md border border-dashed border-[#14263a] bg-[#071021] px-3 py-4 text-center text-xs text-slate-500">
+            Loading documents...
+          </div>
+        ) : documents.length === 0 ? (
           <div className="flex flex-col gap-2 justify-center items-center mt-4  p-4 text-center">
             <MessageSquare />
             <p className=" text-[11px] text-slate-500">

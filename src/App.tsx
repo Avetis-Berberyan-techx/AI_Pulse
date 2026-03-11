@@ -7,10 +7,12 @@ import type { UploadedDocument } from "./types/documents";
 
 function App() {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const loadDocuments = async () => {
+      setIsLoadingDocuments(true);
       try {
         const response = await fetch("/api/documents");
         if (!response.ok) {
@@ -31,6 +33,8 @@ function App() {
         setDocuments(mapped);
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoadingDocuments(false);
       }
     };
 
@@ -56,6 +60,7 @@ function App() {
         >
           <SideBar
             documents={documents}
+            isLoadingDocuments={isLoadingDocuments}
             onNavigate={() => setIsMobileSidebarOpen(false)}
           />
         </div>

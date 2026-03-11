@@ -1,5 +1,13 @@
 import { useState, type ChangeEvent } from "react";
-import { Check, FileText, PanelLeft, Trash2, Upload, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  MessageSquare,
+  FileText,
+  PanelLeft,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import type { UploadedDocument } from "../types/documents";
 
 type DocumentUploadProps = {
@@ -15,6 +23,7 @@ function DocumentUpload({
   onDocumentDeleted,
   onToggleSidebar,
 }: DocumentUploadProps) {
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -228,7 +237,14 @@ function DocumentUpload({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-slate-500">
-                    <Check size={13} />
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/document-chat/${document.id}`)}
+                      className="transition hover:text-slate-300"
+                      aria-label={`Open chat for ${document.name}`}
+                    >
+                      <MessageSquare size={13} />
+                    </button>
                     <button
                       type="button"
                       onClick={() => deleteDocument(document.id)}

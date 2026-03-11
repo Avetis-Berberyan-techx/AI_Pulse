@@ -1,5 +1,6 @@
-import { ObjectId } from "mongodb";
 import Groq from "groq-sdk";
+import { ObjectId } from "mongodb";
+
 import {
   ensureConnected,
   client,
@@ -8,17 +9,7 @@ import {
   documentsCollection,
 } from "../config/db.js";
 import { embeddingsModel } from "./embeddings.js";
-
-type ChatMessage = {
-  role: string;
-  content: string;
-  createdAt?: Date;
-};
-
-type GroqMessage = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
+import { GroqMessage } from "../types/chat.js";
 
 function getGroqApiKey() {
   const key = process.env.GROQ_API_KEY;
@@ -261,8 +252,17 @@ export async function getChatByDocumentId(documentId: string) {
 
 export async function getGeneralChat() {
   await ensureConnected();
-  return client
-    .db(dbName)
-    .collection(chatCollection)
-    .findOne({ type: "general" });
+  const collection = client.db(dbName).collection(chatCollection);
+  await collection.deleteMany({ type: "general" });
+
+  const createdAt = new Date();
+  const insert = await collection.insertOne({
+    type: "general",
+    title: "General Chat",
+    messages: [],
+    createdAt,
+    updatedAt: createdAt,
+  });
+
+  return collection.findOne({ _id: insert.insertedId });
 }
