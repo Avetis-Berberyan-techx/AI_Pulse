@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ArrowUp, PanelLeft, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { UploadedDocument } from "../types/documents";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -17,10 +18,11 @@ const suggestions = [
 ];
 
 type ChatProps = {
+  documents: UploadedDocument[];
   onToggleSidebar: () => void;
 };
 
-function Chat({ onToggleSidebar }: ChatProps) {
+function Chat({ documents, onToggleSidebar }: ChatProps) {
   const { documentId } = useParams();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -29,19 +31,31 @@ function Chat({ onToggleSidebar }: ChatProps) {
 
   const isDocumentChat = Boolean(documentId);
   const hasMessages = messages.length > 0;
+  const currentDocument = useMemo(
+    () => documents.find((doc) => doc.id === documentId),
+    [documents, documentId],
+  );
   const headerLabel = useMemo(
     () =>
       hasMessages
-        ? "Express.js"
+        ? isDocumentChat
+          ? currentDocument?.name ?? "Document Chat"
+          : "All Documents Chat"
         : isDocumentChat
           ? "Document Chat"
           : "All Documents Chat",
-    [hasMessages, isDocumentChat],
+    [hasMessages, isDocumentChat, currentDocument?.name],
   );
   const badgeLabel = useMemo(
     () =>
-      hasMessages ? "4 chunks" : isDocumentChat ? "1 document" : "1 document",
-    [hasMessages, isDocumentChat],
+      isDocumentChat
+        ? `${currentDocument?.chunks ?? 0} ${
+            (currentDocument?.chunks ?? 0) === 1 ? "chunk" : "chunks"
+          }`
+        : `${documents.length} ${
+            documents.length === 1 ? "document" : "documents"
+          }`,
+    [documents.length, isDocumentChat, currentDocument?.chunks],
   );
 
   useEffect(() => {

@@ -27,7 +27,6 @@ PORT=3000
 MONGO_URI=your_mongodb_connection_string
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=llama-3.1-8b-instant
-HUGGINGFACEHUB_API_TOKEN=optional_hf_token
 ```
 
 **Development**

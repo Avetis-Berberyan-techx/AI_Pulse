@@ -91,13 +91,19 @@ function App() {
             <Route
               path="/all-documents-chat"
               element={
-                <Chat onToggleSidebar={() => setIsMobileSidebarOpen(true)} />
+                <Chat
+                  documents={documents}
+                  onToggleSidebar={() => setIsMobileSidebarOpen(true)}
+                />
               }
             />
             <Route
               path="/document-chat/:documentId"
               element={
-                <Chat onToggleSidebar={() => setIsMobileSidebarOpen(true)} />
+                <Chat
+                  documents={documents}
+                  onToggleSidebar={() => setIsMobileSidebarOpen(true)}
+                />
               }
             />
           </Routes>
