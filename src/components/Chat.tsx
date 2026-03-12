@@ -3,12 +3,10 @@ import { useParams } from "react-router-dom";
 import { ArrowUp, PanelLeft, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { UploadedDocument } from "../types/documents";
+import { User, BotMessageSquare } from "lucide-react";
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  text: string;
-};
+import type { ChatMessage } from "../types/chat";
+import type { UploadedDocument } from "../types/documents";
 
 const suggestions = [
   "What documents are available?",
@@ -39,7 +37,7 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
     () =>
       hasMessages
         ? isDocumentChat
-          ? currentDocument?.name ?? "Document Chat"
+          ? (currentDocument?.name ?? "Document Chat")
           : "All Documents Chat"
         : isDocumentChat
           ? "Document Chat"
@@ -74,7 +72,8 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
         const mapped = Array.isArray(data?.messages)
           ? data.messages.map((msg: any) => ({
               role: msg?.role === "assistant" ? "assistant" : "user",
-              text: msg?.content ?? "",
+              content: msg?.content ?? "",
+              createdAt: msg?.createdAt ? new Date(msg.createdAt) : new Date(),
             }))
           : [];
         setMessages(mapped);
@@ -93,7 +92,10 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
     const content = text.trim();
     if (!content) return;
 
-    setMessages((prev) => [...prev, { role: "user", text: content }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content, createdAt: new Date() },
+    ]);
     setInput("");
     setIsThinking(true);
 
@@ -114,8 +116,10 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
         try {
           const data = await response.json();
           if (data?.error) errorMessage = data.error;
-        } catch {
-          // Ignore JSON parsing errors and use fallback message.
+        } catch (err) {
+          if (err instanceof Error) {
+            console.log(err);
+          }
         }
         throw new Error(errorMessage);
       }
@@ -124,7 +128,11 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
       if (data?.assistantResponse) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", text: data.assistantResponse },
+          {
+            role: "assistant",
+            content: data.assistantResponse,
+            createdAt: new Date(),
+          },
         ]);
       }
     } catch (error) {
@@ -195,6 +203,12 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
+                {message.role === "assistant" && (
+                  <BotMessageSquare
+                    size={20}
+                    className="mt-1.5 mr-1.5 text-blue-500"
+                  />
+                )}
                 <div
                   className={`max-w-[70%] rounded-xl px-3 py-2 text-lg ${
                     message.role === "user"
@@ -207,12 +221,15 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
                       remarkPlugins={[remarkGfm]}
                       className="prose prose-invert max-w-none text-slate-200 prose-p:my-1 prose-li:my-0.5 prose-ul:my-1 prose-ol:my-1 prose-pre:my-1 prose-code:text-[#b9d9ff]"
                     >
-                      {message.text}
+                      {message.content}
                     </ReactMarkdown>
                   ) : (
-                    message.text
+                    message.content
                   )}
                 </div>
+                {message.role === "user" && (
+                  <User size={20} className="mt-1.5 ml-1.5 " />
+                )}
               </div>
             ))}
 

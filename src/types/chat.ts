@@ -3,7 +3,7 @@ type ObjectId = string;
 export interface ChatSession {
   _id?: ObjectId;
   documentId: string;
-  type?: "general";
+  type: "general" | "document";
   title: string;
   messages: ChatMessage[];
   createdAt: Date;
