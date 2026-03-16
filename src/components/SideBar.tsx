@@ -4,10 +4,11 @@ import type { UploadedDocument } from "../types/documents";
 
 type SideBarProps = {
   documents: UploadedDocument[];
+  isLoadingDocuments?: boolean;
   onNavigate?: () => void;
 };
 
-function SideBar({ documents, onNavigate }: SideBarProps) {
+function SideBar({ documents, isLoadingDocuments, onNavigate }: SideBarProps) {
   return (
     <aside className="h-full border-r border-[#0f1f31] bg-[#040912] p-4">
       <div className="mb-6 flex items-center gap-3 border-b border-[#0f1f31] pb-4 ">
@@ -55,7 +56,11 @@ function SideBar({ documents, onNavigate }: SideBarProps) {
         <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">
           Documents
         </p>
-        {documents.length === 0 ? (
+        {isLoadingDocuments ? (
+          <div className="mt-4 rounded-md border border-dashed border-[#14263a] bg-[#071021] px-3 py-4 text-center text-xs text-slate-500">
+            Loading documents...
+          </div>
+        ) : documents.length === 0 ? (
           <div className="flex flex-col gap-2 justify-center items-center mt-4  p-4 text-center">
             <MessageSquare />
             <p className=" text-[11px] text-slate-500">
@@ -65,13 +70,20 @@ function SideBar({ documents, onNavigate }: SideBarProps) {
         ) : (
           <div className="mt-3 space-y-1">
             {documents.map((document) => (
-              <button
+              <NavLink
                 key={document.id}
-                type="button"
-                className="flex w-full items-center gap-2 rounded-md bg-[#0d2037] px-2 py-1.5 text-left text-xs text-slate-200"
+                to={`/document-chat/${document.id}`}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition ${
+                    isActive
+                      ? "bg-[#0d2037] text-slate-100"
+                      : "text-slate-400 hover:bg-[#0b1626] hover:text-slate-200"
+                  }`
+                }
               >
                 <span className="truncate">{document.name}</span>
-              </button>
+              </NavLink>
             ))}
           </div>
         )}

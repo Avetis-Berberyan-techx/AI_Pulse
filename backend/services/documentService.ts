@@ -2,7 +2,13 @@ import fs from "fs";
 import { PDFParse } from "pdf-parse";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { ObjectId } from "mongodb";
-import { ensureConnected, client, dbName, documentsCollection, chatCollection } from "../config/db.js";
+import {
+  ensureConnected,
+  client,
+  dbName,
+  documentsCollection,
+  chatCollection,
+} from "../config/db.js";
 import { embeddingsModel } from "./embeddings.js";
 
 function isPdf(mimetype: string, originalName?: string) {
@@ -54,7 +60,7 @@ export async function listDocuments() {
   return client
     .db(dbName)
     .collection(documentsCollection)
-    .find({}, { projection: { extractedText: 0, chunks: 0 } })
+    .find({})
     .toArray();
 }
 
@@ -63,10 +69,7 @@ export async function getDocumentById(id: string) {
   return client
     .db(dbName)
     .collection(documentsCollection)
-    .findOne(
-      { _id: new ObjectId(id) },
-      { projection: { extractedText: 0, chunks: 0 } },
-    );
+    .findOne({ _id: new ObjectId(id) });
 }
 
 export async function createDocument(file: Express.Multer.File) {
@@ -126,10 +129,18 @@ export async function createDocument(file: Express.Multer.File) {
           { $set: { status: "error", error: err.message } },
         );
       fs.unlinkSync(path);
-      return { id: docResult.insertedId, status: "error" as const, error: err.message };
+      return {
+        id: docResult.insertedId,
+        status: "error" as const,
+        error: err.message,
+      };
     }
     fs.unlinkSync(path);
-    return { id: docResult.insertedId, status: "error" as const, error: "Unknown error" };
+    return {
+      id: docResult.insertedId,
+      status: "error" as const,
+      error: "Unknown error",
+    };
   }
 }
 
