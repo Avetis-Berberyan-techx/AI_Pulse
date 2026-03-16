@@ -14,7 +14,9 @@ function App() {
     const loadDocuments = async () => {
       setIsLoadingDocuments(true);
       try {
-        const response = await fetch("/api/documents");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/documents`,
+        );
         if (!response.ok) {
           throw new Error("Failed to load documents");
         }

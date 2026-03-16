@@ -46,10 +46,13 @@ function DocumentUpload({
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/documents`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!response.ok) {
         let errorMessage = "Failed to upload document";
@@ -80,9 +83,12 @@ function DocumentUpload({
 
   const deleteDocument = async (documentId: string) => {
     try {
-      const response = await fetch(`/api/documents/${documentId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/documents/${documentId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
         let errorMessage = "Failed to delete document";

@@ -61,8 +61,8 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
       setIsLoadingHistory(true);
       try {
         const endpoint = isDocumentChat
-          ? `/api/chat/document/${documentId}`
-          : "/api/chat/general";
+          ? `${import.meta.env.VITE_API_URL}/api/chat/document/${documentId}`
+          : `${import.meta.env.VITE_API_URL}/api/chat/general`;
         const response = await fetch(endpoint);
         if (!response.ok) {
           setMessages([]);
@@ -100,7 +100,9 @@ function Chat({ documents, onToggleSidebar }: ChatProps) {
     setIsThinking(true);
 
     try {
-      const endpoint = isDocumentChat ? "/api/chat" : "/api/chat/general";
+      const endpoint = isDocumentChat
+        ? `${import.meta.env.VITE_API_URL}/api/chat`
+        : `${import.meta.env.VITE_API_URL}/api/chat/general`;
       const payload = isDocumentChat
         ? { documentId, newMessage: content }
         : { newMessage: content };
